@@ -533,6 +533,9 @@ class PMASW:
             raise ValueError("Подаваемый массив должен состоять из "
                              "положительных чисел")
 
+        if len(value.shape) != 1:
+            raise ValueError("Размер массива должен быть равен 1")
+
         self._velocities = value
 
 
@@ -586,6 +589,9 @@ class PMASW:
             raise ValueError("Подаваемый массив должен состоять из типов"
                              "данных float64 или int32")
 
+        if len(value.shape) != 1:
+            raise ValueError("Размер массива должен быть равен 1")
+
         self._thetas = PI * (value % 360 / 180)
 
 
@@ -609,7 +615,7 @@ class PMASW:
 
         Returns
         -------
-        thetas : ndarray[dtype: float64, dim = 1]
+        freqs : ndarray[dtype: float64, dim = 1]
             Массив частот в Гц.
 
         """
@@ -641,6 +647,9 @@ class PMASW:
         if any(value < 0):
             raise ValueError("Подаваемый массив должен состоять из "
                              "неотрицательных чисел")
+
+        if len(value.shape) != 1:
+            raise ValueError("Размер массива должен быть равен 1")
 
         if any(value > 1 / self._dt / 2):
             raise ValueError("Подаваемый массив должен состоять из "
@@ -700,9 +709,9 @@ class PMASW:
             информацию о приёмниках.
 
         """
-        seismogram = data.get_seismogram()
+        seismogram = data.seismogram
         data_length = data.nt
-        data_num_rec = data.nt
+        data_num_rec = data.nx
         position_rec_x = recievers.x
         position_rec_y = recievers.y
 
