@@ -49,6 +49,18 @@ class PMASW:
     nt : int
         Количество обрабатываемых отсчётов.
 
+    energy : ndarray[dtype: float64, dim = 3]
+        Энергия для скоростей, частот и азимутов.
+        [vel_axis, freq_axis, azi_axis]
+
+    vf : ndarray[dtype: float64, dim = 2]
+            Энергия для скоростей и частот.
+            [vel_axis, freq_axis]
+
+    f_theta : ndarray[dtype: float64, dim = 2]
+            Энергия для частот и азимутов.
+            [freq_axis, azi_axis]
+
     Methods
     -------
     define_velocities()
@@ -757,7 +769,7 @@ class PMASW:
 
 
     @property
-    def ftheta(self):
+    def f_theta(self):
         """
         Возвращает зависимость энергии от частот и азимутов.
 
@@ -775,4 +787,4 @@ class PMASW:
             raise ValueError("Энергия не была посчитана")
 
         self._en_f_theta = np.sum(self._energy, axis=0)
-
+        return self._en_f_theta
