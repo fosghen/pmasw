@@ -37,6 +37,9 @@ class PassiveData:
         dt : float
             Время десретизации сигнала.
 
+        fs : int
+            Частота дескретизации сигнала.
+
         nt : int
             Количество отсчётов по времени.
 
@@ -46,6 +49,7 @@ class PassiveData:
         """
         self.seismogram = data
         self.dt = dt
+        self._fs = int(1 / dt)
 
 
     @property
@@ -76,11 +80,48 @@ class PassiveData:
         if (not isinstance(value, float)) and (not isinstance(value, int)):
             raise ValueError("Время дескретизации должно быть числом")
 
-        if value <= 0:
+        if value < 0:
             raise ValueError("Время дескретизации должно быть"
                              " положительным числом")
 
         self._dt = float(value)
+        self._fs = int(1 / self._dt)
+
+
+    @property
+    def fs(self):
+        """
+        Возвращает частоту дескретизации.
+
+        Returns
+        -------
+        fs : int
+            Частота дескретизации.
+
+        """
+        return int(1 / self._dt)
+
+
+    @fs.setter
+    def fs(self, value):
+        """
+        Устанавливает частоту дескретизации.
+
+        Parameters
+        ----------
+        value : int
+            Частота дескретизации.
+
+        """
+        if not isinstance(value, int):
+            raise ValueError("Частота дескретизации должна быть целым числом")
+
+        if value < 0:
+            raise ValueError("Частота дескретизации должна быть"
+                             " положительным числом")
+
+        self._fs = value
+        self._dt = float(1 / self._fs)
 
 
     @property
