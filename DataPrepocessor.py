@@ -53,9 +53,9 @@ class DataPreprocessor:
         """
         # определение фактора прореживания относительно текущей частоты
         # Найквиста и заданной граничной частоты обработки
-        fn = self.data.fs // 2
+        fn = self._data.fs // 2
         resamp = int(fn / f_max)
-        fs_decim = int(self.data.fs / resamp)
+        fs_decim = int(self._data.fs / resamp)
 
         # антиалясинговый (полосой) фильтр для частот в диапазоне
         # [1: fs_decim - 1]
@@ -64,19 +64,19 @@ class DataPreprocessor:
                       analog=False,
                       fs=self.data.fs)
 
-        filtered_data = np.array([filtfilt(b, a, self.data.seismogram[:, ii]) \
-                                  for ii in range(self.data.nx)]).T
+        filtered_data = np.array([filtfilt(b, a, self._data.seismogram[:, ii]) \
+                                  for ii in range(self._data.nx)]).T
 
         # прореживание временных отсчетов в данных
         data_decim = filtered_data[:: resamp, :] * resamp
 
-        self.data.seismogram = data_decim
-        self.data.fs = fs_decim
+        self._data.seismogram = data_decim
+        self._data.fs = fs_decim
 
 
     def detrending(self):
         """Удаление линейного тренда из данных."""
-        detrended_data = np.array([detrend(self.data.seismogram[:, ii]) \
-                                   for ii in range(self.data.nx)]).T
+        detrended_data = np.array([detrend(self._data.seismogram[:, ii]) \
+                                   for ii in range(self._data.nx)]).T
 
-        self.data.seimsmogram = detrended_data
+        self._data.seimsmogram = detrended_data
