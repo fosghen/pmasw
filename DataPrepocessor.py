@@ -62,9 +62,11 @@ class DataPreprocessor:
         b, a = butter(5, np.array([1, fs_decim - 1]),
                       btype='band',
                       analog=False,
-                      fs=self.data.fs)
+                      fs=self._data.fs)
 
-        filtered_data = np.array([filtfilt(b, a, self._data.seismogram[:, ii]) \
+        filtered_data = np.array([filtfilt(b,
+                                           a,
+                                           self._data.seismogram[:, ii]) \
                                   for ii in range(self._data.nx)]).T
 
         # прореживание временных отсчетов в данных
