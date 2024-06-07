@@ -13,7 +13,7 @@ import numpy as np
 from segyio import dt as dt_
 from segyio import open as open_
 
-from PassiveData import PassiveData
+from .PassiveData import PassiveData
 
 
 class DataLoader:
@@ -40,7 +40,14 @@ class DataLoader:
 
     Methods
     -------
+    read_segy(path)
+        Читение файлы формата segy.
 
+    read_baykal(path)
+        Чтение файлов формата baykal.
+
+    read_data(path)
+        Чтение файла сейсмических данных.
 
     """
 
@@ -48,7 +55,26 @@ class DataLoader:
                  format,
                  n_components="3C",
                  component="Z"):
+        """
+        Установка необходимых параметров для считыания данных.
 
+        Parameters
+        ----------
+        path : str
+            Путь до файла с данными.
+
+        format : str
+            Формат считываемого файла.
+
+        n_components : str, default = "3C"
+            Количество компонент в записи данных.
+            {"3C", "1C"}
+
+        component : str, default = "Z"
+            Компонента данных.
+            {"Z", "X", "Y"}
+
+        """
         self.path = path
         self.format = format
         self.n_components = n_components
