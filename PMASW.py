@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from fast_pmasw import compute_energy_
+from .fast_pmasw import compute_energy_
 
 PI = 3.1415926535897932384626433832
 
@@ -388,11 +388,14 @@ class PMASW:
         if (not isinstance(value, float)) and (not isinstance(value, int)):
             raise ValueError("Минимальный азимут должен быть числом")
 
-        if PI * (value % 360 / 180) > self._theta_max:
+        if value > 360:
+            value %= 360
+
+        if PI * (value / 180) > self._theta_max:
             raise ValueError("Минимальный азимут должен быть меньше"
                              " либо равен максимальному азимуту")
 
-        self._theta_min = PI * (value % 360 / 180)
+        self._theta_min = PI * (value / 180)
         self.define_thetas()
 
 
@@ -426,11 +429,14 @@ class PMASW:
         if (not isinstance(value, float)) and (not isinstance(value, int)):
             raise ValueError("Максимальный азимут должен быть числом")
 
-        if PI * (value % 360 / 180) < self._theta_min:
+        if value > 360:
+            value %= 360
+
+        if PI * (value / 180) < self._theta_min:
             raise ValueError("Максимальный азимут должен быть больше"
                              " либо равен минимальному азимуту")
 
-        self._theta_max = PI * (value % 360 / 180)
+        self._theta_max = PI * (value / 180)
         self.define_thetas()
 
 
@@ -464,7 +470,9 @@ class PMASW:
         if (not isinstance(value, float)) and (not isinstance(value, int)):
             raise ValueError("Шаг по азимутам должен быть числом")
 
-        self._theta_step = PI * (value % 360 / 180)
+        if value > 360:
+            value %= 360
+        self._theta_step = PI * (value / 180)
         self.define_thetas()
 
 
