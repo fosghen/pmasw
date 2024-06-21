@@ -1,6 +1,7 @@
 """Класс обработки методом PMASW."""
 
 import numpy as np
+from tqdm import trange
 
 from .fast_pmasw import compute_energy_
 
@@ -48,6 +49,9 @@ class PMASW:
 
     nt : int
         Количество обрабатываемых отсчётов.
+
+    overlap : int
+        Процент перекрытия окон.
 
     energy : ndarray[dtype: float64, dim = 3]
         Энергия для скоростей, частот и азимутов.
@@ -102,12 +106,13 @@ class PMASW:
         self._v_step = 10.
         self._theta_min = PI * (0 / 180)
         self._theta_max = PI * (180 / 180)
-        self._theta_step = PI * (10 / 180)
+        self._theta_step = PI * (5 / 180)
         self._freqs = np.array([])
         self._velocities = np.array([])
         self._thetas = np.array([])
         self._dt = 1.
         self._nt = 100.
+        self._overlap = 50
         self._v_max = 100.
         self._f_max = 100.
         self._energy = np.array([])
@@ -514,6 +519,45 @@ class PMASW:
 
 
     @property
+    def overlap(self):
+        """
+        Возвращает перекрытие в процентах.
+
+        Returns
+        -------
+        overlap : int
+            Процент перекрытия окон.
+
+        """
+        return self._overlap
+
+
+    @overlap.setter
+    def overlap(self, value):
+        """
+        Устанавливает процент перекрытия окон пот обработке.
+
+        Parameters
+        ----------
+        value : int
+            Процент перекрытия окон.
+
+        """
+        if not isinstance(value, int):
+            raise ValueError("Процент перекрытия должен"
+                             " быть целым числом")
+
+        if value < 0:
+            raise ValueError("Процент перекрытия должен"
+                             " быть неотрицательным числом")
+
+        if value >= 100:
+            raise ValueError("Процент не может быть большее 100")
+
+        self._overlap = value
+
+
+    @property
     def velocities(self):
         """
         Возвращает набор фазовых скоростей.
@@ -708,6 +752,11 @@ class PMASW:
         return self._energy
 
 
+    def _create_window(self, position_rec_x):
+        self._window = np.repeat(np.atleast_2d(np.hanning(int(self._nt))).T,
+                        len(position_rec_x), axis=1)
+
+
     def compute_energy(self, data, recievers):
         """
         Вычисляет энергии для всех скоростей, частот, азимутов.
@@ -743,9 +792,13 @@ class PMASW:
                            self._freqs.size,
                            self._thetas.size))
 
-        for window_i in range(int(data_length // self._nt)):
-            seismogram_window = seismogram[window_i * self._nt: \
-                                           (window_i + 1) * self._nt, :]
+        nt_step = self._nt - int(self._nt * self._overlap / 100)
+        self._create_window(position_rec_x)
+
+        for i_start in trange(0, data_length + nt_step - self._nt, nt_step):
+            seismogram_window = seismogram[i_start : i_start + self._nt, :] * \
+                    self._window
+
             energy += np.abs(compute_energy_(seismogram_window, self._freqs,
                                            self._velocities, self._thetas,
                                            position_rec_x, position_rec_y))
