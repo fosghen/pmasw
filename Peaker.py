@@ -12,7 +12,11 @@ from scipy.interpolate import interp1d
 class Peaker:
     """Класс для пикировки дисперисонных кривых."""
 
-    def __init__(self, v_p, f_p, v_step):
+    def __init__(self,
+                 v_p,
+                 f_p,
+                 v_step_low_freq,
+                 v_step_high_freq):
         """
         Установка диапазонов пикирования.
 
@@ -26,13 +30,16 @@ class Peaker:
             Диапазон частот, в доль которых определяется
             максимум амплитуды.
 
-        v_step : int | float
-            Диапазон для поиска по скоростям.
+        v_step_low_freq : int | float
+            Диапазон для поиска по скоростям на минимальной частоте.
 
+        v_step_high_freq : int | float
+            Диапазон для поиска по скоростям на максимальной частоте.
         """
         self.v_p = v_p
         self.f_p = f_p
-        self.v_step = v_step
+        self.v_step_high_freq = v_step_high_freq
+        self.v_step_low_freq = v_step_low_freq
         self._interpolator = None
 
         self._interpolation_vf()
@@ -99,21 +106,21 @@ class Peaker:
 
 
     @property
-    def v_step(self):
+    def v_step_low_freq(self):
         """
         Возвращает минимальную фазовую скорость.
 
         Returns
         -------
-        v_step : float
+        v_step_low_freq : float
             Минимальная фазовая скорость.
 
         """
-        return self._v_step
+        return self._v_step_low_freq
 
 
-    @v_step.setter
-    def v_step(self, value):
+    @v_step_low_freq.setter
+    def v_step_low_freq(self, value):
         """
         Устанавливает минимальную фазовую скорость.
 
@@ -130,7 +137,42 @@ class Peaker:
             raise ValueError("Шаг по фазовой скорости должна быть"
                              " положительным числом")
 
-        self._v_step = float(value)
+        self._v_step_low_freq = float(value)
+
+
+    @property
+    def v_step_high_freq(self):
+        """
+        Возвращает минимальную фазовую скорость.
+
+        Returns
+        -------
+        v_step_high_freq : float
+            Минимальная фазовая скорость.
+
+        """
+        return self._v_step_high_freq
+
+
+    @v_step_high_freq.setter
+    def v_step_high_freq(self, value):
+        """
+        Устанавливает минимальную фазовую скорость.
+
+        Parameters
+        ----------
+        value : float
+            Минимальная фазовая скорость.
+
+        """
+        if not isinstance(value, (int, float)):
+            raise ValueError("Шаг по фазовой скорости должн быть числом")
+
+        elif value <= 0:
+            raise ValueError("Шаг по фазовой скорости должна быть"
+                             " положительным числом")
+
+        self._v_step_high_freq = float(value)
 
 
     @property
@@ -222,8 +264,16 @@ class Peaker:
         self._f_p_interp = freqs[(self._f_p.min() <= freqs) * \
                                  (freqs <= self._f_p.max())]
 
+        # Интерполятор диапазона скоростей
+        self._interpolator_v_step = interp1d(self._f_p[[0, -1]],
+                                             [self._v_step_low_freq,
+                                              self._v_step_high_freq])
+
         # Интерполируем скорости
         self._v_p_interp = self._interpolator(self._f_p_interp)
+
+        # Интерполируем диапазон скоростей
+        self._v_step = self._interpolator_v_step(self._f_p_interp)
 
         # Определяем верхнюю границу скоростей
         v_p_interp_upper = np.clip(self._v_p_interp + self._v_step,
